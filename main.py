@@ -1,18 +1,33 @@
 import streamlit as st
 from langchain_groq import ChatGroq
-from langchain_community.utilities import ArxivAPIWrapper
-from langchain_community.tools import ArxivQueryRun, DuckDuckGoSearchRun
+from langchain_community.utilities import ArxivAPIWrapper, WikipediaAPIWrapper
+from langchain_community.tools import ArxivQueryRun, DuckDuckGoSearchRun, WikipediaQueryRun
 from langchain.agents import initialize_agent, AgentType
 from langchain_community.callbacks.streamlit import StreamlitCallbackHandler
-from langchain.memory import ConversationSummaryMemory
+from langchain.memory import ConversationBufferMemory
 import os
 from dotenv import load_dotenv
 
 # Load env
 load_dotenv(".env")
 
+prompt = '''
+
+You are a friendly and knowledgeable medical assistant named Jarvis. Answer all questions clearly, accurately, and in simple language. 
+Provide explanations that are safe, non-harmful, and general; do not give specific medical prescriptions or personal medical advice. 
+When possible, cite trustworthy sources. 
+Use a helpful and compassionate tone.
+
+Examples of questions you may receive:
+- "What causes a sore throat?"
+- "Is paracetamol safe for children?"
+Always provide safe, clear, and informative answers.
+
+'''
+
 # Streamlit UI
-st.title("🔍 Search Engine: Powered by Agentic AI and It's Context Aware")
+st.title("🔍 AI Powered Medic")
+st.divider()
 
 with st.sidebar:
     st.title("⚙️ Configuration")
@@ -23,20 +38,22 @@ if not api_key:
     st.stop()
 
 # Initialize model
-llm = ChatGroq(model="llama-3.3-70b-versatile", api_key=api_key)
+llm = ChatGroq(model="llama-3.1-8b-instant", api_key=api_key)
 
 # Tools
 arxiv_wrapper = ArxivAPIWrapper(top_k_results=3, doc_content_chars_max=200)
+wiki_wrapper = WikipediaAPIWrapper(top_k_results=3, doc_content_chars_max=200)
+
 
 tools = [
+    WikipediaQueryRun(api_wrapper=wiki_wrapper),
     ArxivQueryRun(api_wrapper=arxiv_wrapper),
     DuckDuckGoSearchRun(name="Search"),
 ]
 
 # Memory (summary-based to avoid infinite history growth)
 if "memory" not in st.session_state:
-    st.session_state.memory = ConversationSummaryMemory(
-        llm=llm,
+    st.session_state.memory = ConversationBufferMemory(
         memory_key="chat_history",
         return_messages=True
     )
@@ -55,9 +72,17 @@ agent = initialize_agent(
 if "history" not in st.session_state:
     st.session_state.history = []
 
+if "greeting_shown" not in st.session_state:
+    greeting = agent.run(prompt)
+    st.session_state.history.append({"role": "assistant", "content": greeting})
+    st.session_state.greeting_shown = True  # mark greeting as shown
+
+
 for msg in st.session_state.history:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
+
+
 
 # User input
 if user_input := st.chat_input("Your message"):
