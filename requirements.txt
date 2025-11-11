@@ -4,23 +4,11 @@ langchain-groq==0.3.8
 langchain-community
 
 # Streamlit and UI
-streamlit==1.51.0
+streamlit
 
 # Utilities
-python-dotenv==1.2.1
-wikipedia==1.4.0
-arxiv==2.3.0
+python-dotenv
+wikipedia
+arxiv
 ddgs
 
-# LangChain callbacks
-langchain-community==0.4.1
-
-# Groq SDK
-groq==0.33.0
-
-# Other dependencies
-requests==2.32.5
-pandas==2.3.3
-numpy==2.3.4
-orjson==3.11.4
-tenacity==9.1.2
