@@ -5,6 +5,7 @@ langchain-community
 
 # Streamlit and UI
 streamlit
+duckduckgo-search
 
 # Utilities
 python-dotenv
