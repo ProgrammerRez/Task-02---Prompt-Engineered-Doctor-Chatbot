@@ -2,7 +2,7 @@
 langchain<=0.3.26
 langchain-core >=0.3.79,<1.0.0
 langchain-groq==0.3.8
-langchain-community==<compatible version with core <1.0.0>
+langchain-community
 langchain-text-splitters==0.3.8
 
 # Streamlit and UI
